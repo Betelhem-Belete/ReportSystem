@@ -5,79 +5,78 @@ import Chat from "./Chat";
 
 function Leyout() {
   return (
-    <div className=" mt-5">
-      <div class="d-flex align-items-start">
-        <div
-          class="nav flex-column nav-pills me-3 mt-5"
-          id="v-pills-tab"
-          role="tablist"
-          aria-orientation="vertical"
-        >
+    <>
+      <ul class="nav nav-pills mb-3 mt-5 container" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
           <button
-            class="nav-link active "
-            id="v-pills-home-tab"
+            class="nav-link active"
+            id="pills-home-tab"
             data-bs-toggle="pill"
-            data-bs-target="#v-pills-home"
+            data-bs-target="#pills-home"
             type="button"
             role="tab"
-            aria-controls="v-pills-home"
+            aria-controls="pills-home"
             aria-selected="true"
           >
-           All_Request
+            New_req
           </button>
+        </li>
+        <li class="nav-item" role="presentation">
           <button
             class="nav-link"
-            id="v-pills-profile-tab"
+            id="pills-profile-tab"
             data-bs-toggle="pill"
-            data-bs-target="#v-pills-profile"
+            data-bs-target="#pills-profile"
             type="button"
             role="tab"
-            aria-controls="v-pills-profile"
+            aria-controls="pills-profile"
             aria-selected="false"
           >
-            New_reqest
+            All_req
           </button>
+        </li>
+        <li class="nav-item" role="presentation">
           <button
             class="nav-link"
-            id="v-pills-messages-tab"
+            id="pills-contact-tab"
             data-bs-toggle="pill"
-            data-bs-target="#v-pills-messages"
+            data-bs-target="#pills-contact"
             type="button"
             role="tab"
-            aria-controls="v-pills-messages"
+            aria-controls="pills-contact"
             aria-selected="false"
           >
             Chats
           </button>
+        </li>
+      </ul>
+      <div class="tab-content" id="pills-tabContent">
+        <div
+          class="tab-pane fade show active"
+          id="pills-home"
+          role="tabpanel"
+          aria-labelledby="pills-home-tab"
+        >
+          <NewRequest />
         </div>
-        <div class="tab-content" id="v-pills-tabContent">
-          <div
-            class="tab-pane fade show active"
-            id="v-pills-home"
-            role="tabpanel"
-            aria-labelledby="v-pills-home-tab"
-          >
-           <AllRequest/>
-          </div>
-          <div
-            class="tab-pane fade"
-            id="v-pills-profile"
-            role="tabpanel"
-            aria-labelledby="v-pills-profile-tab"
-          >
-            <NewRequest/>
-          </div>
-          <div
-            class="tab-pane fade"
-            id="v-pills-messages"
-            role="tabpanel"
-            aria-labelledby="v-pills-messages-tab"
-          >
-            <Chat/>
-          </div>
+        <div
+          class="tab-pane fade"
+          id="pills-profile"
+          role="tabpanel"
+          aria-labelledby="pills-profile-tab"
+        >
+          <AllRequest />
+        </div>
+        <div
+          class="tab-pane fade"
+          id="pills-contact"
+          role="tabpanel"
+          aria-labelledby="pills-contact-tab"
+        >
+          <Chat />
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

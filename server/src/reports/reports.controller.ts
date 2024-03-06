@@ -32,9 +32,9 @@ export class ReportsController {
     return this.reportsService.findOne(+id);
   }
 
-  @Post(':id')
-  update(@Body() createReportDto: CreateReportDto) {
-    return this.reportsService.update(createReportDto);
+  @Patch('edit')
+  update_chat(@Body() createReportDto: CreateReportDto) {
+    return this.reportsService.update_chat(createReportDto);
   }
 
   @Delete(':id')

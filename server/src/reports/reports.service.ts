@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateReportDto } from './dto/create-report.dto';
-import { UpdateReportDto } from './dto/update-report.dto';
+// import { UpdateReportDto } from './dto/update-report.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Chat } from 'src/chat/entities/chat.entity';
 import { Repository } from 'typeorm';
-import { UserStatus } from 'src/user/dto/create-user.dto';
+// import { UserStatus } from 'src/user/dto/create-user.dto';
 
 @Injectable()
 export class ReportsService {
@@ -27,12 +27,13 @@ export class ReportsService {
           AND chat.isComplit = false
       `;
       const results = await this.userRepository.query(query);
-      
+
       return results;
     } catch (error) {
       console.log(error);
       throw error; // Re-throw error for further handling
-    }  }
+    }
+  }
   /////////////////
   async All_req(createReportDto: CreateReportDto) {
     try {
@@ -47,7 +48,7 @@ export class ReportsService {
           AND chat.isComplit = false
       `;
       const results = await this.userRepository.query(query);
-      
+
       return results;
     } catch (error) {
       console.log(error);
@@ -69,12 +70,12 @@ export class ReportsService {
           AND chat.isComplit = false
       `;
       const results = await this.userRepository.query(query);
-      
+
       return results;
     } catch (error) {
       console.log(error);
       throw error; // Re-throw error for further handling
-    }  
+    }
   }
 
   findAll() {
@@ -84,21 +85,41 @@ export class ReportsService {
   findOne(id: number) {
     return `This action returns a #${id} report`;
   }
+///////////////////
+async update_chat(createReportDto: CreateReportDto) {
+  console.log(createReportDto,'dto');
+  
+  try {
+    // Update user state
+    const userQuery = `
+      UPDATE user
+      SET state = 'in_session'
+      WHERE id = '${createReportDto.userId}';
+    `;
+    await this.userRepository.query(userQuery);
 
-  async update( createReportDto: CreateReportDto) {
-    const query  =`update user
-                    where user.phone = ${createReportDto.phone}
-                    set user.state = 'in_session'`
-    const q2 = `update chat
-                where chat.id = ${createReportDto.ChatId}
-                set isComplit = false and
-                receiver = ${createReportDto.userId}`
+    // Update chat
+    const chatQuery = `
+      UPDATE chat
+      SET isComplit = false,
+          receiverId = ${createReportDto.employeeId}
+      WHERE senderId = ${createReportDto.userId};
+    `;
+    await this.chatRepository.query(chatQuery);
 
-    const data = await this.userRepository.query(query)
-    console.log(data, "updated")
-    // emit hear
+    console.log('Updated user state and chat');
+
+    // Emit whatever you need here
+
+    return { success: true };
+  } catch (error) {
+    console.error(error);
+    throw error; // Re-throw error for further handling
   }
+}
 
+
+////////////////
   remove(id: number) {
     return `This action removes a #${id} report`;
   }

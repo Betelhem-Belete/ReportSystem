@@ -18,149 +18,7 @@ function Chat() {
   const [hoveredIcons, setHoveredIcons] = useState([]);
   const chatBoxRef = useRef(null); // Ref for the chat box element
 
-  const handleMouseEnter = (index) => {
-    setHoveredIcons((prevIcons) => {
-      const newIcons = [...prevIcons];
-      newIcons[index] = true;
-      return newIcons;
-    });
-  };
-  /////////////////
-  const handleMouseLeave = (index) => {
-    setHoveredIcons((prevIcons) => {
-      const newIcons = [...prevIcons];
-      newIcons[index] = false;
-      return newIcons;
-    });
-  };
-  //////////////
-  useEffect(() => {
-    socket = io("http://localhost:3000/", {
-      extraHeaders: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
-    getnotif();
 
-    // Add event listener for 'message' event only if it's not already added
-    socket.on("message", (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-      // Scroll the chat box to the bottom
-      chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
-    });
-    socket.on("Gnotification", (data) => {
-      setNotification((prevNotifications) => [...prevNotifications, data]);
-      setNotificationCount((prevCount) => {
-        const newCount = prevCount + 1;
-        return newCount;
-      });
-    });
-
-    return () => {
-      socket.off("Gnotification");
-      socket.off("message");
-    };
-  }, []);
-  //////////////
-  const getnotif = async () => {
-    try {
-      const get_notif = await axios.post(
-        "http://localhost:3000/notification/get",
-        {
-          id: token.id,
-        }
-      );
-      console.log(get_notif.data, " get");
-      // console.log(get_notif.data.length, "length")
-      setNotificationCount(get_notif.data.length);
-      setNotification(get_notif.data);
-      console.log(notification, "notification");
-    } catch (error) {
-      console.log(error, "errossss");
-    }
-  };
-  ///////////////
-  const handleUserClick = async (user) => {
-    console.log(user, "11");
-    setSelectedUser(user);
-    try {
-      const response = await axios.post("http://localhost:3000/chat", {
-        sender: token.id,
-        receiver: user.id,
-      });
-      const c_id = response.data.id;
-      setRoomId(c_id);
-      socket.emit("joinRoom", c_id);
-    } catch (error) {
-      console.error("Error creating chat room:", error);
-    }
-    try {
-      // console.log(message, token.id ,selectedUser.id)
-      const msg = await axios.post("http://localhost:3000/message/get", {
-        sender: token.id,
-        receiver: user.id,
-      });
-      setMessages(msg.data);
-    } catch (error) {
-      console.log("error while sending message", error);
-    }
-  };
-  //////////////
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get("http://localhost:3000/user/", {
-        params: {
-          query: searchQuery,
-        },
-      });
-      setUsers(response.data);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    }
-  };
-  ///////////
-  const handleSendMessage = async () => {
-    if (!selectedUser) return; // Check if a user is selected
-
-    try {
-      // console.log(message, token.id ,selectedUser.id)
-      const msg = await axios.post("http://localhost:3000/message/add", {
-        message,
-        sender: token.id,
-        receiver: selectedUser.id,
-      });
-      const data = msg.data;
-      socket.emit("sendMessage", { roomId, message: data });
-      setMessage("");
-      const notif = await axios.post("http://localhost:3000/notification/add", {
-        message,
-        sender: token.id,
-        receiver: selectedUser.id,
-      });
-      console.log(notif.data, "add, notif");
-      socket.emit("notification", { message: notif.data });
-    } catch (error) {
-      console.log("error while sending message", error);
-    }
-  };
-  /////////////////////
-  const handle_delete = async (id) => {
-    const Dnotif = await axios.delete(
-      `http://localhost:3000/notification/${id}`
-    );
-    if (Dnotif) {
-      const N = notification.filter((item) => id !== item.id);
-      setNotification(N);
-    }
-  };
-  ////////////////////
-  const handle_goTo_notif = async (user) => {
-    console.log(user, "uses");
-    console.log(users, "exist user");
-    const find_user = users.filter((index) => index.id === user.N_sender);
-    console.log(find_user[0], "find user");
-    handleUserClick(find_user[0]);
-  };
   ////////////////
   return (
     <div className="">
@@ -194,7 +52,7 @@ function Chat() {
                     notification.map((notif, index) => (
                       <li
                         key={notif.id}
-                        onClick={() => handle_goTo_notif(notif)}
+                        // onClick={() => handle_goTo_notif(notif)}
                       >
                         <a class="dropdown-item d-flex justify-content-between align-items-center">
                           <span>new {notif.message}</span>
@@ -203,9 +61,9 @@ function Chat() {
                             style={{
                               color: hoveredIcons[index] ? "red" : "black",
                             }}
-                            onMouseEnter={() => handleMouseEnter(index)}
-                            onMouseLeave={() => handleMouseLeave(index)}
-                            onClick={() => handle_delete(notif.id)}
+                            // onMouseEnter={() => handleMouseEnter(index)}
+                            // onMouseLeave={() => handleMouseLeave(index)}
+                            // onClick={() => handle_delete(notif.id)}
                           ></i>
                         </a>
                       </li>
@@ -227,7 +85,7 @@ function Chat() {
                 <button
                   className="btn btn-outline-secondary"
                   type="button"
-                  onClick={handleSearch}
+                  // onClick={handleSearch}
                 >
                   Search
                 </button>
@@ -241,7 +99,7 @@ function Chat() {
                         : ""
                     }`}
                     key={index}
-                    onClick={() => handleUserClick(user)}
+                    // onClick={() => handleUserClick(user)}
                   >
                     {user.email}
                   </li>
@@ -298,7 +156,7 @@ function Chat() {
             className="btn btn-primary"
             type="button"
             id="button-addon2"
-            onClick={handleSendMessage}
+            // onClick={handleSendMessage}
           >
             Send
           </button>

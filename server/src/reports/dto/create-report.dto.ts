@@ -1,5 +1,5 @@
 export class CreateReportDto {
-    phone : string
-    ChatId: string
+    employeeId : string
+    // ChatId: string
     userId : string
 }
