@@ -1,5 +1,5 @@
 export class CreateMessageDto {
     message : string
-    sender : number
-    receiver : number
+    senderId : number
+    receiverId : number
 }

@@ -35,6 +35,21 @@ function Chat() {
     handleSearch()
   },[])
   ////////////////
+  const handleUserClick = async (chat) => {
+    console.log(chat, "11");
+    setSelectedUser(chat);
+    // try {
+    //   // console.log(message, token.id ,selectedUser.id)
+    //   const msg = await axios.post("http://localhost:3000/message/get", {
+    //     sender: token.id,
+    //     receiver: user.id,
+    //   });
+    //   setMessages(msg.data);
+    // } catch (error) {
+    //   console.log("error while sending message", error);
+    // }
+  };
+  //////////////
   return (
     <div className="">
       <div className="row">
@@ -114,7 +129,7 @@ function Chat() {
                         : ""
                     }`}
                     key={user.id}
-                    // onClick={() => handleUserClick(user)}
+                    onClick={() => handleUserClick(user)}
                   >
                     {user.senderPhone}<br></br>
                     <sub>{user.title}</sub>
