@@ -5,7 +5,7 @@ var socket;
 const token = JSON.parse(localStorage.getItem("access_token"));
 
 function Chat() {
-  const { access_token } = token;
+  const { id } = token;
 
   const [roomId, setRoomId] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
@@ -18,7 +18,22 @@ function Chat() {
   const [hoveredIcons, setHoveredIcons] = useState([]);
   const chatBoxRef = useRef(null); // Ref for the chat box element
 
+///////////////
 
+  const handleSearch = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/chat/agent",{receiver:id});
+      return setUsers(response.data);
+      
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  console.log(users,'redata')
+//////////
+  useEffect(()=>{
+    handleSearch()
+  },[])
   ////////////////
   return (
     <div className="">
@@ -91,17 +106,18 @@ function Chat() {
                 </button>
               </div>
               <ul className="list-group">
-                {users.map((user, index) => (
+                {users &&users.map((user) => (
                   <li
                     className={`list-group-item ${
                       selectedUser && selectedUser.id === user.id
                         ? "active"
                         : ""
                     }`}
-                    key={index}
+                    key={user.id}
                     // onClick={() => handleUserClick(user)}
                   >
-                    {user.email}
+                    {user.senderPhone}<br></br>
+                    <sub>{user.title}</sub>
                   </li>
                 ))}
               </ul>

@@ -22,6 +22,11 @@ export class ChatController {
     return this.chatService.findOne(+id);
   }
 
+  @Post('agent')
+  getChat(@Body() createChatDto: CreateChatDto) {
+    return this.chatService.getChat(createChatDto);
+  }
+////////////////
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
     return this.chatService.update(+id, updateChatDto);

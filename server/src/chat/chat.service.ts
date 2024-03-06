@@ -4,11 +4,13 @@ import { UpdateChatDto } from './dto/update-chat.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Chat } from './entities/chat.entity';
 import { Repository } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class ChatService {
   constructor(
     @InjectRepository(Chat) private chatRepository: Repository<Chat>,
+    @InjectRepository(User) private userRepository: Repository<User>,
   ) {}
 
   async create(createChatDto: CreateChatDto) {
@@ -22,7 +24,25 @@ export class ChatService {
     
     return data
     }
-   
+
+   ////////
+   async getChat(createChatDto: CreateChatDto) {
+    try {
+      const query = `
+        SELECT chat.*, user.phone AS senderPhone
+        FROM chat
+        INNER JOIN user ON chat.senderId = user.id
+        WHERE chat.receiverId = ${createChatDto.receiver}
+      `;
+      const results = await this.chatRepository.query(query);
+      console.log(results, 'result');
+      return results;
+    } catch(error) {
+      console.log(error);
+      throw error; // Re-throw error for further handling
+    }
+  }
+  
 
   findAll() {
     return `This action returns all chat`;
