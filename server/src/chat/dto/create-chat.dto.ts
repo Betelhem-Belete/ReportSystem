@@ -1,1 +1,6 @@
-export class CreateChatDto {}
+import { User } from "src/user/entities/user.entity";
+
+export class CreateChatDto {
+    sender: number;
+    receiver: number;
+}

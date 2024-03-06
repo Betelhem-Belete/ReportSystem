@@ -1,4 +1,4 @@
-enum UserStatus {
+export enum UserStatus {
     RESOLVED = 'resolved',
     IN_SESSION = 'in_session',
     OPEN = 'open'}
@@ -8,4 +8,5 @@ export class CreateUserDto {
     isBlocked : boolean
     state: UserStatus
     message: string
+    Role: string
 }

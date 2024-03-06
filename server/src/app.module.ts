@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
 import { Message } from './message/entities/message.entity';
 import { Chat } from './chat/entities/chat.entity';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -17,7 +18,7 @@ import { Chat } from './chat/entities/chat.entity';
     database: 'reports',
     entities: [User,Message,Chat],
     synchronize: true,
-  }), UserModule, ChatModule, MessageModule],
+  }), UserModule, ChatModule, MessageModule, ReportsModule],
   controllers: [],
   providers: [],
 })

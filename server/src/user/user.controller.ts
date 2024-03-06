@@ -12,11 +12,15 @@ export class UserController {
     return this.userService.Create_custumer(createUserDto);
   }
 
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+  @Post('login')
+  create_employee_login(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create_employee_login(createUserDto);
   }
 
+  @Post('signup')
+  create_employee_signup(@Body() createUserDto: CreateUserDto) {
+    return this.userService.create_employee_signup(createUserDto);
+  }
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);

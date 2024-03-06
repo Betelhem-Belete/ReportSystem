@@ -7,7 +7,7 @@ export class Chat {
    @PrimaryGeneratedColumn()
    id : bigint;
 
-   @Column()
+   @Column({nullable: true})
    resolvedAt : Date
 
    @Column()
@@ -16,7 +16,7 @@ export class Chat {
    @Column()
    title : string;
 
-   @Column()
+   @Column({default: true})
    isComplit : boolean;
 
    @ManyToOne(() => User, user => user.chatSender)
