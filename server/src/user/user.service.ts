@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Chat } from 'src/chat/entities/chat.entity';
 import * as bcrypt from 'bcrypt';
 import { Message } from 'src/message/entities/message.entity';
+import { WebsocketGateway } from 'src/socket/websocket.gateway';
 
 
 @Injectable()
@@ -18,6 +19,7 @@ export class UserService {
     @InjectRepository(Message) private messageRepository: Repository<Message>,
 
     private jwt: JwtService,
+    private socketGateway: WebsocketGateway,
   ) {}
 
   async Create_custumer(createUserDto: CreateUserDto) {
@@ -44,6 +46,8 @@ export class UserService {
         })
         const res = await this.chatRepository.save(chat_req)
         console.log(res, "respons_non exsiting")
+        ////emit here
+        this.socketGateway.emitNotificationToGroups(res, 'agent')
         return res
       }
       /////////////////
@@ -75,6 +79,7 @@ export class UserService {
       })
       const res = await this.chatRepository.save(chat_req)
       console.log(res, "respons_for exsting")
+      ////emit
       return res
      }
      else if(check.state ==='open'){
@@ -102,7 +107,7 @@ export class UserService {
   
       return {
         access_token: await this.jwt.signAsync(payload),
-        id: user.id,
+        id: user.id
       };
     } catch (error) {
     console.log(error, 'someting went wrong');

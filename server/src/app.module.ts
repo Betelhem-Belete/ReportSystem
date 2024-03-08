@@ -7,6 +7,8 @@ import { User } from './user/entities/user.entity';
 import { Message } from './message/entities/message.entity';
 import { Chat } from './chat/entities/chat.entity';
 import { ReportsModule } from './reports/reports.module';
+import { WebsocketGateway } from './socket/websocket.gateway';
+import { MessageService } from './message/message.service';
 
 @Module({
   imports: [TypeOrmModule.forRoot({
@@ -20,6 +22,6 @@ import { ReportsModule } from './reports/reports.module';
     synchronize: true,
   }), UserModule, ChatModule, MessageModule, ReportsModule],
   controllers: [],
-  providers: [],
+  providers: [WebsocketGateway, MessageService],
 })
 export class AppModule {}

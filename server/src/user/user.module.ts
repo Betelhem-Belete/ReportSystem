@@ -6,6 +6,8 @@ import { User } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { Chat } from 'src/chat/entities/chat.entity';
 import { Message } from 'src/message/entities/message.entity';
+import { WebsocketGateway } from 'src/socket/websocket.gateway';
+import { MessageService } from 'src/message/message.service';
 
 @Module({
   imports : [TypeOrmModule.forFeature([User,Chat, Message]),
@@ -15,6 +17,6 @@ import { Message } from 'src/message/entities/message.entity';
     signOptions: { expiresIn: '1d' },
 }),],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, WebsocketGateway, MessageService],
 })
 export class UserModule {}
