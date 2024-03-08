@@ -5,9 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { Chat } from 'src/chat/entities/chat.entity';
+import { Message } from 'src/message/entities/message.entity';
 
 @Module({
-  imports : [TypeOrmModule.forFeature([User,Chat]),
+  imports : [TypeOrmModule.forFeature([User,Chat, Message]),
   JwtModule.register({
     global: true,
     secret: 'jwtConstants.secret',

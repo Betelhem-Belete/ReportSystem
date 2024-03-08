@@ -12,8 +12,10 @@ export class MessageController {
     return this.messageService.create(createMessageDto);
   }
 
-  @Get('get')
+  @Post('get')
   fetchAll(@Body() createMessageDto: CreateMessageDto) {
+    console.log(createMessageDto, 'tst');
+    
     return this.messageService.fetchAll(createMessageDto);
   }
 

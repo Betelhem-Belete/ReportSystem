@@ -7,7 +7,7 @@ import { get } from 'http';
 @Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
-
+  
   @Get('new')
   New_req(@Body() createReportDto: CreateReportDto) {
     return this.reportsService.New_req(createReportDto);

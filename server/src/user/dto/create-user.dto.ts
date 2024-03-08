@@ -9,4 +9,6 @@ export class CreateUserDto {
     state: UserStatus
     message: string
     Role: string
+    chatId:string
+    userId:string
 }

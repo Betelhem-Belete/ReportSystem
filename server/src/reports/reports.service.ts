@@ -16,15 +16,13 @@ export class ReportsService {
   async New_req(createReportDto: CreateReportDto) {
     try {
       const query = `
-        SELECT user.phone as phone,
-               chat.title as chatTitle,
-               user.state as userState,
-               chat.id as chatId
-        FROM user
-        LEFT JOIN chat ON user.id = chat.senderId
-        WHERE user.Role = 'user'
-          AND user.state = 'open'
-          AND chat.isComplit = false
+      SELECT user.phone as phone,
+      chat.title as chatTitle,
+      user.state as userState,
+      user.id as userId
+FROM user
+LEFT JOIN chat ON user.id = chat.senderId
+WHERE (user.Role = 'user') AND (user.state = 'open')
       `;
       const results = await this.userRepository.query(query);
 
@@ -45,7 +43,6 @@ export class ReportsService {
         FROM user
         LEFT JOIN chat ON user.id = chat.senderId
         WHERE user.Role = 'user'
-          AND chat.isComplit = false
       `;
       const results = await this.userRepository.query(query);
 
@@ -109,7 +106,7 @@ async update_chat(createReportDto: CreateReportDto) {
 
     console.log('Updated user state and chat');
 
-    // Emit whatever you need here
+    // Emit here
 
     return { success: true };
   } catch (error) {

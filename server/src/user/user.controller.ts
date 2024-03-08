@@ -21,18 +21,21 @@ export class UserController {
   create_employee_signup(@Body() createUserDto: CreateUserDto) {
     return this.userService.create_employee_signup(createUserDto);
   }
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
+  }
+
+  @Patch('complete')
+  completeRequest(@Body() createUserDto: CreateUserDto) {
+    return this.userService.completeRequest(createUserDto);
+
+  }
+
+  @Patch('block')
+  blockUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.blockUser(createUserDto);
+
   }
 }

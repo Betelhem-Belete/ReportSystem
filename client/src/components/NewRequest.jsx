@@ -12,6 +12,14 @@ function NewRequest() {
 //   in_session : 'btn-success'
 // }
 //////////
+const handle_state = (userId)=>{
+  // console.log(userId, "userid")
+  const token = JSON.parse(localStorage.getItem("access_token"));
+  const { id } = token;
+  axios.patch('http://localhost:3000/reports/edit', {employeeId:id,userId})
+}
+console.log(reqests, 'new')
+
   useEffect(()=>{
     fetch_all()
   },[])
@@ -21,13 +29,13 @@ function NewRequest() {
   }
   return (
     <div>
-      <table class="table table-hover">
+      <table className="table table-hover">
   <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">Phone</th>
       <th scope="col">Title</th>
-      <th scope="col">Chat Id</th>
+      {/* <th scope="col">Chat Id</th> */}
       <th scope="col">User_state</th>
     </tr>
   </thead>
@@ -38,8 +46,8 @@ function NewRequest() {
     <th scope="row">1</th>
     <td>{m.phone}</td>
     <td>{m.chatTitle}</td>
-    <td>{m.chatId}</td>
-    <td><button className={`btn btn-outline-primary`}>{m.userState}</button></td>
+    {/* <td>{m.chatId}</td> */}
+    <td><button onClick={()=>handle_state(m.userId)} className={`btn btn-outline-primary`}>{m.userState}</button></td>
   </tr>
   ))
  }

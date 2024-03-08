@@ -20,7 +20,7 @@ function Chat() {
 
 ///////////////
 
-  const handleSearch = async () => {
+  const handleUsers = async () => {
     try {
       const response = await axios.post("http://localhost:3000/chat/agent",{receiver:id});
       return setUsers(response.data);
@@ -29,27 +29,73 @@ function Chat() {
       console.error("Error fetching users:", error);
     }
   };
-  console.log(users,'redata')
 //////////
   useEffect(()=>{
-    handleSearch()
+    handleUsers()
   },[])
   ////////////////
   const handleUserClick = async (chat) => {
     console.log(chat, "11");
     setSelectedUser(chat);
-    // try {
-    //   // console.log(message, token.id ,selectedUser.id)
-    //   const msg = await axios.post("http://localhost:3000/message/get", {
-    //     sender: token.id,
-    //     receiver: user.id,
-    //   });
-    //   setMessages(msg.data);
-    // } catch (error) {
-    //   console.log("error while sending message", error);
-    // }
+    try {
+      // console.log(message, token.id ,selectedUser.id)
+      const msg = await axios.post("http://localhost:3000/message/get", {
+        sender: chat.senderId,
+        receiver: id,
+      });
+      setMessages(msg.data);
+      console.log(messages,"te")
+    } catch (error) {
+      console.log("error while sending message", error);
+    }
   };
-  //////////////
+  console.log(messages,"te")
+  ////////////// 
+  const handleSendMessage = async () => {
+    if (!selectedUser) return; // Check if a user is selected
+
+    try {
+      // console.log(message, token.id ,selectedUser.id)
+      const msg = await axios.post("http://localhost:3000/message/add", {
+        message,
+        sender: id,
+        receiver: selectedUser.senderId,
+      });
+      console.log(selectedUser, 'selected suer')
+      // const data = msg.data;
+      // setMessages((prev)=>[...prev , data])
+      // socket.emit("sendMessage", { roomId, message: data });
+      setMessage("");
+      // const notif = await axios.post("http://localhost:3000/notification/add", {
+      //   message,
+      //   sender: token.id,
+      //   receiver: selectedUser.id,
+      // });
+      // console.log(notif.data, "add, notif");
+      // socket.emit("notification", { message: notif.data });
+    } catch (error) {
+      console.log("error while sending message", error);
+    }
+  };
+ /////////////////// 
+  const handleCompleteReport = async () => {
+    const data = await axios.patch(`http://localhost:3000/user/complete`,
+    {
+      chatId :selectedUser.id,
+      userId : selectedUser.senderId
+    })
+    data ? alert('report has been completed') : alert('error');
+  }
+
+  const handleBlockUser = async () => {
+    const data = await axios.patch(`http://localhost:3000/user/block`,
+    {
+     userId: selectedUser.senderId
+    })
+    data ? alert('report has been blocked') : alert('error');
+  }
+  console.log(selectedUser, 'tryinggg')
+
   return (
     <div className="">
       <div className="row">
@@ -187,9 +233,25 @@ function Chat() {
             className="btn btn-primary"
             type="button"
             id="button-addon2"
-            // onClick={handleSendMessage}
+            onClick={handleSendMessage}
           >
             Send
+          </button>
+          <button
+            className="btn btn-danger m-1"
+            type="button"
+            id="button-addon2"
+            onClick={handleBlockUser}
+          >
+            Block
+          </button>
+          <button
+            className="btn btn-success m-1"
+            type="button"
+            id="button-addon2"
+            onClick={handleCompleteReport}
+          >
+            Complete
           </button>
         </div>
       </div>

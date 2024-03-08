@@ -12,27 +12,17 @@ export class MessageService {
 
   ){}
   async create(createMessageDto: CreateMessageDto) {
+    console.log(createMessageDto, "dtoooo");
+    
     try {
         // Extract the properties from createMessageDto
-        const { message, senderId, receiverId } = createMessageDto;
-        // Create a new message entity
-        let send :any
-        let rec :any
-        send = senderId
-        rec = receiverId
-        const newMessage = this.messageRepository.create({
-          message,
-          sender: send,
-          receiver: rec, 
-            createdAt: new Date(),
-        });
+        const { message, sender, receiver } = createMessageDto;
+        const query = `INSERT INTO message (message, senderId, receiverId, createdAt) VALUES (?, ?, ?, ?)`;
+        const createdAt = new Date()
+        const data = await this.messageRepository.query(query, [message, sender, receiver, createdAt]);
+        console.log(data, "kdjfk");
 
-        // Save the message entity
-        const savedMessage = await this.messageRepository.save(newMessage);
-
-        console.log(savedMessage, "kdjfk");
-
-        return savedMessage;
+        return data;
     } catch (error) {
         console.error(error);
         throw error; // Re-throw error for further handling
@@ -40,33 +30,47 @@ export class MessageService {
 }
 
 
-  async fetchAll(createMessageDto: CreateMessageDto) {
-    try {
-      const data = await this.messageRepository
-      .createQueryBuilder('message')
-      .select([
-        'message.id',
-        'message.message',
-        'message.senderId',
-        'message.receiverId',
-      ])
-      .where("(message.sender = :sender AND message.receiver = :receiver)", { sender: createMessageDto.senderId, receiver: createMessageDto.receiverId })
-      .orWhere("(message.sender = :receiver AND message.receiver = :sender)", { sender: createMessageDto.receiverId, receiver: createMessageDto.senderId })
-      .getRawMany();
+
+async fetchAll(createMessageDto: CreateMessageDto) {
+  console.log(createMessageDto, 'msg');
+  try {
+      const query = `
+          SELECT
+              message.id AS message_id,
+              message.message AS message_message,
+              message.senderId AS senderId,
+              message.receiverId AS receiverId
+          FROM
+              message
+          WHERE
+              (message.senderId = ? AND message.receiverId = ?)
+          OR
+              (message.senderId = ? AND message.receiverId = ?)
+      `;
+      
+      const data = await this.messageRepository.query(query, [
+          createMessageDto.sender,
+          createMessageDto.receiver,
+          createMessageDto.receiver,
+          createMessageDto.sender
+      ]);
+
       const messages = data.map(message => ({
-        message: message.message_message,
-        sender: message.senderId,
-        receiver: message.receiverId,
-        id: message.message_id,
+          message: message.message_message,
+          sender: message.senderId,
+          receiver: message.receiverId,
+          id: message.message_id,
       }));
-     
-      if(!data) return []
+
+      if (!data) return [];
+      console.log(messages, 'sent mssg');
       return messages;
-     } catch (error) {
-      console.log(error)
-      return
-     }
+  } catch (error) {
+      console.log(error);
+      return [];
   }
+}
+
 
   findOne(id: number) {
     return `This action returns a #${id} message`;

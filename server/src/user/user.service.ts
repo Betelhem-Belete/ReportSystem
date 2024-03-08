@@ -7,6 +7,7 @@ import { User } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { Chat } from 'src/chat/entities/chat.entity';
 import * as bcrypt from 'bcrypt';
+import { Message } from 'src/message/entities/message.entity';
 
 
 @Injectable()
@@ -14,15 +15,20 @@ export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Chat) private chatRepository: Repository<Chat>,
+    @InjectRepository(Message) private messageRepository: Repository<Message>,
 
     private jwt: JwtService,
   ) {}
 
   async Create_custumer(createUserDto: CreateUserDto) {
+    const check = await this.userRepository.findOne({
+      where: { phone: createUserDto.phone },
+    });
+    if(check?.isBlocked){
+      return
+    }
     try {
-      const check = await this.userRepository.findOne({
-        where: { phone: createUserDto.phone },
-      });
+     
       let user:any;
       //////////////
       if (!check) {
@@ -40,20 +46,42 @@ export class UserService {
         console.log(res, "respons_non exsiting")
         return res
       }
+      /////////////////
       let checks: any;
      checks = check.id
-      const chat_req = await this.chatRepository.create({
-        sender : checks,
+     if(check.state === 'in_session'){
+      const query = `select receiverId, senderId
+                    from chat 
+                    where  (senderId=${checks} and isComplit= false)`
+      const data = await this.chatRepository.query(query)
+      console.log('in sesion', data)// worked
+      //////////
+      const { message} = createUserDto;
+      const query2 = `INSERT INTO message (message, senderId, receiverId, createdAt) VALUES (?, ?, ?, ?)`;
+      const createdAt = new Date()
+      const data2 = await this.messageRepository.query(query2, [message, data[0].senderId, data[0].receiverId, createdAt]);
+      console.log(data2, "kdjfk");
+      return data2;    
+
+     }else if(check.state === 'resolved'){
+       const q1 = `update user 
+                    set state = 'open'
+                    where id = ${checks}`
+       const user = await this.chatRepository.query(q1)
+       const chat_req = await this.chatRepository.create({
+        sender : user.id,
         title: createUserDto.message,
         createdAt: new Date()
       })
-      
       const res = await this.chatRepository.save(chat_req)
       console.log(res, "respons_for exsting")
       return res
-    
-     
-    } catch (error) {
+     }
+     else if(check.state ==='open'){
+      return ('your request is under review')
+     }
+    } 
+    catch (error) {
       console.log(error);
     }
   }
@@ -105,17 +133,42 @@ export class UserService {
     } catch (error) {}
   }
 
-  findOne(id: number) {
+
+
+  async completeRequest(createUserDto:CreateUserDto) {
     try {
-    } catch (error) {}
-    return `This action returns a #${id} user`;
+        const query = `UPDATE chat
+                       SET isComplit = true
+                       WHERE id = ?`;
+        const query2 = `UPDATE user
+                       SET state = 'resolved'
+                       WHERE id = ?`;
+
+        const result = await this.chatRepository.query(query, [createUserDto.chatId]);
+        const result2 = await this.userRepository.query(query2, [createUserDto.userId]);
+
+        console.log('Completed', result, result2);
+    } catch (error) {
+        console.error(error);
+        // Handle the error appropriately
+    }
+    return
+}
+
+async blockUser(createUserDto:CreateUserDto) {
+    try {
+        const query = `UPDATE user
+                       SET isBlocked = true
+                       WHERE id = ?`;
+        const result = await this.userRepository.query(query, [createUserDto.userId]);
+        console.log('Blocked');
+    } catch (error) {
+        console.error(error);
+        // Handle the error appropriately
+    }
+    return
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    try {
-    } catch (error) {}
-    return `This action updates a #${id} user`;
-  }
 
   remove(id: number) {
     try {
