@@ -1,13 +1,33 @@
 import axios from 'axios';
 import  { useEffect, useState } from 'react';
 
-function AllRequest() {
+function AllRequest({data}) {
     const [requests, setRequests] = useState([]);
+console.log(data, "prop");
+    // useEffect(() => {
+    //   const result =  requests.filter((prv)=>prv.id === data2.id );
+    //   const dt = result.state = data2.state;
+    //   setRequests((prev)=>[...prev, dt])
+    //   }, [data2]); 
+    useEffect(() => {
+        setRequests(prevRequests => {
+            const updatedRequests = prevRequests.map(request => {
+                if (request.userId === data.id) {
+                    // Update state property of the matched request
+                    return { ...request, userState: data.state };
+                }
+                return request;
+            });
+            console.log(updatedRequests,'final')
+            return updatedRequests;
+        });
+    }, [data]);
 
-    const handleState = (userId) => {
+    const handleState =async (userId) => {
         const token = JSON.parse(localStorage.getItem("access_token"));
         const {  id } = token;
-        axios.patch('http://localhost:3000/reports/edit', { employeeId: id, userId });
+        await axios.patch('http://localhost:3000/reports/edit', { employeeId: id, userId });
+
     }
 
     const color = {
@@ -23,6 +43,7 @@ function AllRequest() {
     const fetchAll = async () => {
         const response = await axios.get('http://localhost:3000/reports/all');
         setRequests(response.data);
+        console.log(response.data, "res");
     };
 
     return (

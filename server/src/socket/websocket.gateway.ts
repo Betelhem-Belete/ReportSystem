@@ -1,8 +1,7 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage } from '@nestjs/websockets';
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { Injectable } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { MessageService } from 'src/message/message.service';
 
 interface JwtPayload {
   id: string;
@@ -21,115 +20,97 @@ interface GroupedMessage extends JwtPayload {
 
 @Injectable()
 @WebSocketGateway({ cors: '*' })
-export class WebsocketGateway implements OnModuleInit {
+export class WebsocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer()
   server: Server;
   socketMap = new Map<string, SocketMetaPayload>();
   socketMapGroup = new Map<string, GroupedMessage[]>(); // Changed to an array for multiple sockets per role
 
-  constructor(
-    private readonly messageService: MessageService,
-    private readonly jwt: JwtService
-  ) { }
+  constructor(private readonly jwt: JwtService) {}
 
-  onModuleInit() {
-    this.server.on('connection', async (socket) => {
-      console.log(`Socket connected: ${socket.id}`);
-      const token = socket.handshake.headers.authorization?.split(' ')[1];
-      if (!token) {
-        socket.disconnect(true);
-        console.log('Returned');
-        return;
+  afterInit(server: Server) {
+    console.log('WebSocket Server Initialized');
+  }
+
+  handleConnection(client: Socket) {
+    console.log(`Socket connected: ${client.id}`);
+    const token = client.handshake.headers.authorization?.split(' ')[1];
+    if (!token) {
+      client.disconnect(true);
+      console.log('Returned');
+      return;
+    }
+
+    try {
+      const payload = this.jwt.verify(token);
+      this.socketMap.set(payload.id, {
+        ...payload,
+        socketId: client.id,
+      });
+
+      if (!this.socketMapGroup.has(payload.role)) {
+        this.socketMapGroup.set(payload.role, []);
       }
 
-      try {
-        const payload = this.jwt.verify(token);
-        console.log("My payload", payload);
+      const group = this.socketMapGroup.get(payload.role);
+      group.push({
+        ...payload,
+        socketId: client.id,
+      });
 
-        this.socketMap.set(payload.id, {
-          ...payload,
-          socketId: socket.id,
-        });
-
-        // Check if role exists in the group map
-        if (!this.socketMapGroup.has(payload.role)) {
-          // If role doesn't exist, create a new entry with an empty array
-          this.socketMapGroup.set(payload.role, []);///may not be neccessary
-        }
-
-        // Push the socket info to the array for the corresponding role
-        const group = this.socketMapGroup.get(payload.role);
-        group.push({
-          ...payload,
-          socketId: socket.id,
-        });
-
-        // Update the map with the modified array
-        this.socketMapGroup.set(payload.role, group);
-      } catch (error) {
-        if (error instanceof TokenExpiredError) {
-          console.log('Token expired');
-        } else {
-          console.error('Error verifying token:', error);
-        }
-        return;
+      this.socketMapGroup.set(payload.role, group);
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        console.log('Token expired');
+      } else {
+        console.error('Error verifying token:', error);
       }
-    });
+      return;
+    }
   }
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
-    // Remove disconnected client from the socketMap
     this.socketMap.forEach((value, key) => {
       if (value.socketId === client.id) {
         this.socketMap.delete(key);
       }
     });
 
-    // Remove disconnected client from the socketMapGroup
     this.socketMapGroup.forEach((group, key) => {
       const updatedGroup = group.filter(socket => socket.socketId !== client.id);
       this.socketMapGroup.set(key, updatedGroup);
     });
   }
 
-//   async emitNotificationToUser(userId: string, notification: any) {
-//     // Check if the user is online
-//     if (this.socketMap.has(userId)) {
-//       const userSocket = this.socketMap.get(userId);
-//       this.server.to(userSocket.socketId).emit('notification', notification);
-//     } else {
-//       console.log(`User with ID ${userId} is not online.`);
-//     }
-//   }
-  
-
-  async emitNotificationToGroups(notification : any, role: string) {
-    // Get sockets from the group map based on the provided role
+  async emitNotificationToGroups(notification: any, role: string) {
     const sockets = this.socketMapGroup.get(role) || [];
 
-    // Send notification to sockets in the specified group
     sockets.forEach(socketMeta => {
       this.server.to(socketMeta.socketId).emit('resquest', notification);
     });
 
-    // Log if no sockets found in the group
     if (sockets.length === 0) {
       console.log(`No ${role} users online at the moment!`);
     }
   }
+  async emitStateToGroup(state: any, role: string) {
+    const sockets = this.socketMapGroup.get(role) || [];
 
-  @SubscribeMessage('joinRoom')
-  handleJoinRoom(client: Socket, room: string) {
-    client.join(room);
-    console.log(`Client ${client.id} joined room ${room}`);
+    sockets.forEach(socketMeta => {
+      this.server.to(socketMeta.socketId).emit('session', state);
+    });
+
+    if (sockets.length === 0) {
+      console.log(`No ${role} users online at the moment!`);
+    }
   }
-
   @SubscribeMessage('sendMessage')
   handleMessage(client: Socket, data: any) {
     this.server.to(data.room).emit('connection', data.message);
   }
+
   @SubscribeMessage('currentUsers')
   async currentUsers(client: Socket) {
     client.emit('currentUsers', Array.from(this.socketMap.values()));

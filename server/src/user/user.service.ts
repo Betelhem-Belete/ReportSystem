@@ -35,21 +35,36 @@ export class UserService {
       //////////////
       if (!check) {
         const data = await this.userRepository.create({
-          phone: createUserDto.phone,
-          state: createUserDto.state,
+            phone: createUserDto.phone,
+            state: createUserDto.state,
         });
-         user = await this.userRepository.save(data);
+          user = await this.userRepository.save(data);
+    
         const chat_req = await this.chatRepository.create({
-          sender : user.id,
-          title: createUserDto.message,
-          createdAt: new Date()
-        })
-        const res = await this.chatRepository.save(chat_req)
-        console.log(res, "respons_non exsiting")
-        ////emit here
-        this.socketGateway.emitNotificationToGroups(res, 'agent')
-        return res
-      }
+            sender: user.id,
+            title: createUserDto.message,
+            createdAt: new Date()
+        });
+    
+        const res = await this.chatRepository.save(chat_req);
+         // Add 'chatTitle' property to 'user' object
+       const title = user.chatTitle = chat_req.title;
+    
+        // Emit notification with updated 'user' object
+        const { phone, id: userId, state: userState } = user;
+
+const modifiedUser = {
+  phone,
+  userId,
+  userState,
+  chatTitle :title
+};
+        this.socketGateway.emitNotificationToGroups(modifiedUser, 'agent');
+        console.log(modifiedUser,'emitted');
+        // Return the saved chat
+        return modifiedUser;
+    }
+    
       /////////////////
       let checks: any;
      checks = check.id

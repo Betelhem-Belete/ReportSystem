@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Chat } from 'src/chat/entities/chat.entity';
 import { Repository } from 'typeorm';
+import { WebsocketGateway } from 'src/socket/websocket.gateway';
 // import { UserStatus } from 'src/user/dto/create-user.dto';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class ReportsService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Chat) private chatRepository: Repository<Chat>,
+    private socket : WebsocketGateway
   ) {}
   async New_req(createReportDto: CreateReportDto) {
     try {
@@ -93,7 +95,12 @@ async update_chat(createReportDto: CreateReportDto) {
       SET state = 'in_session'
       WHERE id = '${createReportDto.userId}';
     `;
-    await this.userRepository.query(userQuery);
+   const data2 = await this.userRepository.query(userQuery);
+   const updatedUser = await this.userRepository.findOne({ where: { id: createReportDto.userId } }); // Changed this line
+ 
+   console.log(updatedUser, "data2");
+      
+    this.socket.emitStateToGroup(updatedUser ,'agent')
 
     // Update chat
     const chatQuery = `
